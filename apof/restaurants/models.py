@@ -22,6 +22,9 @@ class Restaurant(models.Model):
 	def  __repr__(self):
 		return 'name="{}", phone="{}"'.format(self.name, self.phone)
 
+	def __str__(self):
+		return self.name
+
 	class Meta:
 		ordering = ('name',)
 
@@ -31,6 +34,9 @@ class Ingredients(models.Model):
 
 	def __repr__(self):
 		return 'ingredient name="{}"'.format(self.ingredient_name)
+
+	def __str__(self):
+		return self.ingredient_name
 
 	class Meta:
 		ordering = ('ingredient_name',)
@@ -48,6 +54,9 @@ class Meal(models.Model):
 	def __repr__(self):
 		return 'meal name="{}", spicy="{}" ,price s="{}", price m="{}", price l="{}"'.\
 			format(self.name, self.spicy, self.price_s, self.price_m, self.price_l)
+
+	def __self__(self):
+		return self.meal_name
 
 	class Meta:
 		ordering = ('meal_name',)
