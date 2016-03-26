@@ -42,131 +42,78 @@ def parse_coloseum(url):
 		list: pizzas_procesed - contains list of all current pizzas from the menu.
 	'''
 	soup = read_site(url)
-	
+
 	pizzas_procesed = []
+	#current_pizza = []
 
 	pizzas = soup.find_all('tr')
-	pizzas_splited = str(pizzas[0]).split('\n')
-	sentinel = 0
+	all_names = pizzas[0].find_all('tr', {'class': 'pizza-nazwa'})
+	all_properties = pizzas[0].find_all('tr', {'class': 'pizza-opis'})
+	all_prices = pizzas[0].find_all('td', {'class': 'pizza-cena'})
+	
+	#49 pizzas
+	for item in all_names:
+		current_pizza = parse_name(item)
+		pizzas_procesed.append(current_pizza)
 
-	for i, element in enumerate(pizzas_splited):
+	for i, item in enumerate(all_properties):
+		current_pizza = parse_ingredients(item)
 		
-		if 'class="pizza-nazwa"' in element:
-			
-			current_pizza = parse_name(i, pizzas_splited)
+		for element in current_pizza:
+			pizzas_procesed[i].append(element)
+		
+	print(pizzas_procesed)
 
-		elif 'class="pizza-opis"' in element:
-
-			current_pizza = parse_ingredients(i, pizzas_splited, current_pizza)
-			#print (current_pizza)
-			
-		elif 'class="pizza-cena"' in element:
-
-			pizzas_procesed, sentinel = parse_prices(i, pizzas_splited, current_pizza, pizzas_procesed, sentinel)
-
-	return pizzas_procesed
+	for i, element in enumerate(all_prices):
+		pass
 
 
 #Subfunctions of the 'parse_coloseum' function.
-def parse_name(i, pizzas_splited):
-	'''
-	Args:
-		i - index from enumerate method.
-		pizzas_splited - list of lines with raw data from the menu.html page.
+def parse_name(current_name_processed):
+
+	current_pizza = []
+	name_build = []
+	spicy_check = False
 	
-	Returns:
-		current_pizza - list of all properities of pizza
-						(name, spicy, ingredients, prices per size).
-	'''
-	if 'ostra' in pizzas_splited[i+1]:
-		current_pizza = []
-		temp = str(pizzas_splited[i+1])
-		name = re.findall(r"[\w']+", temp)
+	name_raw = str(current_name_processed.get_text())
+	name_elements = re.findall(r"[\w]+", name_raw)
+	
+	for element in name_elements[1:]:
+		if element != 'ostra':
+			name_build.append(element)
+		
+		if element == 'ostra':
+			spicy_check = True
 
-		if name[3] == 'b':
-			record = str(name[2]).strip().lstrip()
-		else:
-			record = ' '.join(name[2:4]).strip().lstrip()
+	name = ' '.join(name_build)
+	current_pizza.append(name)
 
-		current_pizza.append(record)
+	if spicy_check == True:
 		current_pizza.append('tak')
-
-	else:
-		current_pizza = []
-		temp = str(pizzas_splited[i+1])
-		name = re.findall(r"[\w']+", temp)
-
-		if name[3] == 'b':
-			record = str(name[2]).strip().lstrip()
-		else:
-			record = ' '.join(name[2:4]).strip().lstrip()
-
-		current_pizza.append(record)
-		current_pizza.append('nie')
-
-	return current_pizza
-
-
-def parse_ingredients(i, pizzas_splited, current_pizza):
-	'''
-	Args:
-		i - index from enumerate method.
-		pizzas_splited - list of lines with raw data from the menu.html page.
-		current_pizza - list of all properties of the pizza
-						(name, spicy, ingredients, prices per size).
-
-	Returns:
-		current_pizza - list of all properities of pizza
-						(name, spicy, ingredients, prices per size).
-	'''
-	ing = []
-	temp = str(pizzas_splited[i+1])
-	temp2 = str(pizzas_splited[i+2])
-	#temp = re.findall(r"[\w']+", temp)
-	temp = re.findall(r"[\+]|[\(][\w]+|[\w]+[\)]|[\w]+[\,]|[\w]+", temp)
-	temp2 = re.findall(r"[\+]|[\(][\w]+|[\w]+[\)]|[\w]+[\,]|[\w]+", temp2)
-
-	ing.extend(temp)
-	if len(temp2) > 1:
-		ing.extend(temp2[1:])
 	
-	ingredient = []
-	for element in ing:
-		if element != 'br':
-			ingredient.append(element)
-		elif element != 'td':
-			ingredient.append(element)
-
-	ingredient = ' '.join(ingredient)
-	ingredient = ingredient.split(',')
-	current_pizza.extend(ingredient)
+	else:
+		current_pizza.append('nie')	
 
 	return current_pizza
 
 
-def parse_prices(i, pizzas_splited, current_pizza, pizzas_procesed, sentinel):
-	'''
-	Args:
-		i - index from enumerate method.
-		pizzas_splited - list of lines with raw data from the menu.html page.
-		current_pizza - list of all properties of the pizza
-						(name, spicy, ingredients, prices per size).
-		pizzas_procesed - main list of the all available pizzas.
-		sentinel - sentinel value for appending current pizza to all pizzas list.
-							
-	Returns:
-		pizzas_procesed - main list of the all available pizzas.
-	'''
-	sentinel += 1		
-	temp = str(pizzas_splited[i+1])
-	temp = temp[3:8]
-	current_pizza.append(temp)
-	if sentinel == 3:
-		final_line = ';'.join(current_pizza)
-		pizzas_procesed.append(final_line)
-		sentinel = 0
+def parse_ingredients(current_properties_parsed):
+	current_pizza = []
+	properties_build = []
 
-	return pizzas_procesed, sentinel
+	properties_raw = current_properties_parsed.find_all('td')
+	properties = str(properties_raw[0].get_text())
+	properties_elements = properties.replace('\n',',').split(',')
+	
+	for element in properties_elements:
+		if len(element) != 0:
+			current_pizza.append(element)
+	
+	return current_pizza
+
+
+def parse_prices():
+	pass
 
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -245,8 +192,8 @@ def save_work_in_progres(a_list):
 def main():
 	if DEBUG == False:
 		processed_data = parse_coloseum(URL)
-		save_parsed(processed_data)
-		compare_parsed()
+		#save_parsed(processed_data)
+		#compare_parsed()
 	
 	elif DEBUG == True:
 		bs = read_site(URL)
@@ -260,4 +207,4 @@ if __name__ == '__main__':
 ######################################################################
 # Disregard that, those are only my notes.
 # len(pizzas) = 177
-# len(pizzas_splited) = 692
+# len(current_pizza) = 692
