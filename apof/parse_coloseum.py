@@ -62,10 +62,20 @@ def parse_coloseum(url):
 		for element in current_pizza:
 			pizzas_procesed[i].append(element)
 		
-	print(pizzas_procesed)
 
-	for i, element in enumerate(all_prices):
-		pass
+	current_pizza = []
+	main_index = 0
+	for i, item in enumerate(all_prices):
+		current_price = parse_prices(item)
+		current_pizza.append(current_price)
+		if len(current_pizza) == 3:
+			for price in current_pizza:
+				pizzas_procesed[main_index].append(price)
+			current_pizza = []
+			main_index += 1
+		#pizzas_procesed[i].append(element)
+
+	return pizzas_procesed
 
 
 #Subfunctions of the 'parse_coloseum' function.
@@ -106,14 +116,20 @@ def parse_ingredients(current_properties_parsed):
 	properties_elements = properties.replace('\n',',').split(',')
 	
 	for element in properties_elements:
-		if len(element) != 0:
-			current_pizza.append(element)
+		element_ready_to_write = str(element).lstrip().strip()
+		if len(element_ready_to_write) != 0:
+			current_pizza.append(element_ready_to_write)
 	
 	return current_pizza
 
 
-def parse_prices():
-	pass
+def parse_prices(current_price_parsed):
+	price_raw = current_price_parsed.find_all('b')
+	price = str(price_raw[0].get_text())
+	
+	return price
+	
+
 
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -143,7 +159,8 @@ def save_parsed(a_list):
 	
 	with codecs.open(target, 'w', 'utf-8') as myfile:
 		for element in a_list:
-			myfile.write('{}{}'.format(str(element), '\n'))
+			element_ready_to_write = ';'.join(element)
+			myfile.write('{}{}'.format(str(element_ready_to_write), '\n'))
 
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -192,8 +209,8 @@ def save_work_in_progres(a_list):
 def main():
 	if DEBUG == False:
 		processed_data = parse_coloseum(URL)
-		#save_parsed(processed_data)
-		#compare_parsed()
+		save_parsed(processed_data)
+		compare_parsed()
 	
 	elif DEBUG == True:
 		bs = read_site(URL)
