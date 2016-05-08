@@ -113,8 +113,10 @@ def parse_ingredients(current_properties_parsed):
 
 	properties_raw = current_properties_parsed.find_all('td')
 	properties = str(properties_raw[0].get_text())
-	properties_elements = properties.replace('\n',',').split(',')
-	
+	properties = properties.replace('\xa0', ' ')
+
+	properties_elements = properties.replace('\n', ',').split(',')
+
 	for element in properties_elements:
 		element_ready_to_write = str(element).lstrip().strip()
 		if len(element_ready_to_write) != 0:

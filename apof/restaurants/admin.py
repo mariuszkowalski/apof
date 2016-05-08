@@ -40,6 +40,17 @@ class MealAdmin(admin.ModelAdmin):
 	
 	get_restaurant.admin_order_feld = 'meal_name'
 
+
+
+class IngredientsAdmin(admin.ModelAdmin):
+	model = Ingredients
+
+	def get_ingredient(self, obj):
+		return ingredients.ingredient_name
+
+	get_ingredient.admin_order_feld = 'ingredient_name'
+
+
 '''
 class IngredientsAdmin(admin.ModelAdmin):
 	model = Ingredients
@@ -49,5 +60,4 @@ class IngredientsAdmin(admin.ModelAdmin):
 
 admin.site.register(Restaurant, RestaurantAdmin)
 admin.site.register(Meal, MealAdmin)
-#admin.site.register(Ingredients, IngredientsAdmin)
-
+admin.site.register(Ingredients, IngredientsAdmin)
